@@ -24,7 +24,7 @@ namespace EmpDepRoleFulstackProjectJun13.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin,Manager,IT")]
+        [Authorize(Roles = "Admin,Manager,IT,Tester")]
         public async Task<IActionResult> GetEmployees()
         {
             var employees = await _employeeService.GetAllEmployeesAsync();
@@ -47,7 +47,7 @@ namespace EmpDepRoleFulstackProjectJun13.Controllers
         }
 
         [HttpPut("{id:int}")]
-        [Authorize(Roles = "Admin,IT")]
+        [Authorize(Roles = "Admin,Manager,IT")]
         public async Task<IActionResult> UpdateEmployee(int id, [FromBody] UpdateEmployeeDTO empDTO)
         {
 

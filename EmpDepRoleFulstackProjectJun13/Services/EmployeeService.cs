@@ -1,4 +1,5 @@
-﻿using EmpDepRoleFulstackProjectJun13.Exceptions;
+﻿using AutoMapper;
+using EmpDepRoleFulstackProjectJun13.Exceptions;
 using EmpDepRoleFulstackProjectJun13.Models.Domain;
 using EmpDepRoleFulstackProjectJun13.Models.DTO;
 using EmpDepRoleFulstackProjectJun13.Repositories;
@@ -7,11 +8,14 @@ namespace EmpDepRoleFulstackProjectJun13.Services
 {
     public class EmployeeService:IEmployeeService
     {
+        private readonly IMapper _mapper;
         private readonly IEmployeeRepository _employeeRepository;
         private readonly IDepartmentRepository _departmentRepository;
         private readonly IRoleRepository _roleRepository;
-        public EmployeeService(IEmployeeRepository repository, IRoleRepository roleRepository, IDepartmentRepository departmentRepository)
+        public EmployeeService(IEmployeeRepository repository, IRoleRepository roleRepository, IDepartmentRepository departmentRepository,
+            IMapper mapper)
         {
+            _mapper = mapper;
             _employeeRepository = repository;
             _roleRepository= roleRepository;
             _departmentRepository= departmentRepository;
@@ -34,33 +38,34 @@ namespace EmpDepRoleFulstackProjectJun13.Services
                 throw new Exception("Invalid Department");
 
             // 2️⃣ Map DTO → Domain
-            var emp = new Employee
-            {
-                Name = dto.Name,
-                Email = dto.Email,
-                Salary = dto.Salary,
-                JoiningDate = dto.JoiningDate,
-                DepartmentId = dto.DepartmentId,
-                RoleId = dto.RoleId
-            };
+            //var emp = new Employee
+            //{
+            //    Name = dto.Name,
+            //    Email = dto.Email,
+            //    Salary = dto.Salary,
+            //    JoiningDate = dto.JoiningDate,
+            //    DepartmentId = dto.DepartmentId,
+            //    RoleId = dto.RoleId
+            //};
+            var emp = _mapper.Map<Employee>(dto);
 
             // 3️⃣ Call Repository to Add
             await _employeeRepository.CreateAsync(emp);
 
             // 4️⃣ Reload
             var savedEmp = await _employeeRepository.GetByIdAsync(emp.EmployeeId);
-
             // 5️⃣ Map Domain → DTO
-            return new GetEmployeeDTO
-            {
-                EmployeeId = savedEmp.EmployeeId,
-                Name = savedEmp.Name,
-                Email = savedEmp.Email,
-                Salary = savedEmp.Salary,
-                JoiningDate = savedEmp.JoiningDate,
-                DepartmentName = savedEmp.Department?.Name,
-                RoleName = savedEmp.Role?.RoleName
-            };
+            //return new GetEmployeeDTO
+            //{
+            //    EmployeeId = savedEmp.EmployeeId,
+            //    Name = savedEmp.Name,
+            //    Email = savedEmp.Email,
+            //    Salary = savedEmp.Salary,
+            //    JoiningDate = savedEmp.JoiningDate,
+            //    DepartmentName = savedEmp.Department?.Name,
+            //    RoleName = savedEmp.Role?.RoleName
+            //};
+            return _mapper.Map<GetEmployeeDTO>(savedEmp);
         }
 
         public async Task<bool> DeleteEmployeeAsync(int id)
@@ -76,20 +81,20 @@ namespace EmpDepRoleFulstackProjectJun13.Services
             var employees=await _employeeRepository.GetAllAsync();
             //Map domaian to DTO;
             var employeeList=new List<GetEmployeeDTO>();
-            foreach (var employee in employees)
-            {
-                employeeList.Add(
-                new GetEmployeeDTO
-                {
-                    EmployeeId = employee.EmployeeId,
-                    Name = employee.Name,
-                    Email = employee.Email,
-                    Salary = employee.Salary,
-                    DepartmentName = employee.Department?.Name,
-                    RoleName=employee.Role?.RoleName
-                });
-            }
-            return employeeList;
+            //foreach (var employee in employees)
+            //{
+            //    employeeList.Add(
+            //    new GetEmployeeDTO
+            //    {
+            //        EmployeeId = employee.EmployeeId,
+            //        Name = employee.Name,
+            //        Email = employee.Email,
+            //        Salary = employee.Salary,
+            //        DepartmentName = employee.Department?.Name,
+            //        RoleName=employee.Role?.RoleName
+            //    });
+            //}
+            return _mapper.Map<List<GetEmployeeDTO>>(employees);
         }
 
         public async Task<GetEmployeeDTO?> GetEmployeeByIdAsync(int id)
@@ -100,44 +105,46 @@ namespace EmpDepRoleFulstackProjectJun13.Services
                 return null;
             }
             //domain to DTO conversion
-            var dto = new GetEmployeeDTO
-            {
-                EmployeeId =emp.EmployeeId,
-                Name = emp.Name,
-                Email = emp.Email,
-                JoiningDate = emp.JoiningDate,
-                DepartmentName = emp.Department?.Name,
-                RoleName = emp.Role?.RoleName
-            };
-            return dto;
+            //var dto = new GetEmployeeDTO
+            //{
+            //    EmployeeId =emp.EmployeeId,
+            //    Name = emp.Name,
+            //    Email = emp.Email,
+            //    JoiningDate = emp.JoiningDate,
+            //    DepartmentName = emp.Department?.Name,
+            //    RoleName = emp.Role?.RoleName
+            //};
+            return _mapper.Map<GetEmployeeDTO>(emp);
         }
 
         public async Task<GetEmployeeDTO> UpdateEmployeeAsync(int id, UpdateEmployeeDTO empDTO)
         {
-            var emp = new Employee
-            {
-                Email = empDTO.Email,
-                DepartmentId = empDTO.DepartmentId,
-                Salary = empDTO.Salary,
-                JoiningDate = empDTO.JoiningDate,
-                RoleId = empDTO.RoleId,
-                Name = empDTO.Name
-            };
+            //dto to domain
+            var emp = _mapper.Map<Employee>(empDTO);
+            //var emp = new Employee
+            //{
+            //    Email = empDTO.Email,
+            //    DepartmentId = empDTO.DepartmentId,
+            //    Salary = empDTO.Salary,
+            //    JoiningDate = empDTO.JoiningDate,
+            //    RoleId = empDTO.RoleId,
+            //    Name = empDTO.Name
+            //};
             emp=await _employeeRepository.UpdateAsync(id,emp);
             if (emp == null)
                 return null;
             //domain to DTO conversion
-            var dto = new GetEmployeeDTO
-            {
-                EmployeeId = emp.EmployeeId,
-                Name = emp.Name,
-                Email = emp.Email,
-                Salary=emp.Salary,
-                JoiningDate = emp.JoiningDate,
-                DepartmentName = emp.Department?.Name,
-                RoleName = emp.Role?.RoleName
-            };
-            return dto;
+            //var dto = new GetEmployeeDTO
+            //{
+            //    EmployeeId = emp.EmployeeId,
+            //    Name = emp.Name,
+            //    Email = emp.Email,
+            //    Salary=emp.Salary,
+            //    JoiningDate = emp.JoiningDate,
+            //    DepartmentName = emp.Department?.Name,
+            //    RoleName = emp.Role?.RoleName
+            //};
+            return _mapper.Map<GetEmployeeDTO>(emp);
         }
     }
 }
