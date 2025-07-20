@@ -3,6 +3,7 @@ using EmpDepRoleFulstackProjectJun13.Exceptions;
 using EmpDepRoleFulstackProjectJun13.Models.Domain;
 using EmpDepRoleFulstackProjectJun13.Models.DTO;
 using EmpDepRoleFulstackProjectJun13.Repositories;
+using Microsoft.AspNetCore.Mvc;
 
 namespace EmpDepRoleFulstackProjectJun13.Services
 {
@@ -20,7 +21,7 @@ namespace EmpDepRoleFulstackProjectJun13.Services
             _roleRepository= roleRepository;
             _departmentRepository= departmentRepository;
         }
-        public async Task<GetEmployeeDTO> CreateEmployeeAsync(CreateEmployeeDTO dto)
+        public async Task<GetEmployeeV1DTO> CreateEmployeeAsync(CreateEmployeeDTO dto)
         {
             // 1️⃣ Business Rule
             if (dto.JoiningDate > DateTime.UtcNow)
@@ -65,7 +66,7 @@ namespace EmpDepRoleFulstackProjectJun13.Services
             //    DepartmentName = savedEmp.Department?.Name,
             //    RoleName = savedEmp.Role?.RoleName
             //};
-            return _mapper.Map<GetEmployeeDTO>(savedEmp);
+            return _mapper.Map<GetEmployeeV1DTO>(savedEmp);
         }
 
         public async Task<bool> DeleteEmployeeAsync(int id)
@@ -76,11 +77,12 @@ namespace EmpDepRoleFulstackProjectJun13.Services
             return emp != null;
         }
 
-        public async Task<List<GetEmployeeDTO>> GetAllEmployeesAsync()
+        public async Task<List<GetEmployeeV1DTO>> GetAllEmployeesAsync(string? filterOn = null,string? filterQuery = null,string? sortBy=null, bool isAscending=true,int? PageNumber=1,
+              int? PageSize=1000)
         {
-            var employees=await _employeeRepository.GetAllAsync();
+            var employees=await _employeeRepository.GetAllAsync(filterOn,filterQuery,sortBy,isAscending,PageNumber,PageSize);
             //Map domaian to DTO;
-            var employeeList=new List<GetEmployeeDTO>();
+            var employeeList=new List<GetEmployeeV1DTO>();
             //foreach (var employee in employees)
             //{
             //    employeeList.Add(
@@ -94,10 +96,10 @@ namespace EmpDepRoleFulstackProjectJun13.Services
             //        RoleName=employee.Role?.RoleName
             //    });
             //}
-            return _mapper.Map<List<GetEmployeeDTO>>(employees);
+            return _mapper.Map<List<GetEmployeeV1DTO>>(employees);
         }
 
-        public async Task<GetEmployeeDTO?> GetEmployeeByIdAsync(int id)
+        public async Task<GetEmployeeV1DTO?> GetEmployeeByIdAsync(int id)
         {
             var emp=await _employeeRepository.GetByIdAsync(id);
             if (emp == null)
@@ -114,10 +116,10 @@ namespace EmpDepRoleFulstackProjectJun13.Services
             //    DepartmentName = emp.Department?.Name,
             //    RoleName = emp.Role?.RoleName
             //};
-            return _mapper.Map<GetEmployeeDTO>(emp);
+            return _mapper.Map<GetEmployeeV1DTO>(emp);
         }
 
-        public async Task<GetEmployeeDTO> UpdateEmployeeAsync(int id, UpdateEmployeeDTO empDTO)
+        public async Task<GetEmployeeV1DTO> UpdateEmployeeAsync(int id, UpdateEmployeeDTO empDTO)
         {
             //dto to domain
             var emp = _mapper.Map<Employee>(empDTO);
@@ -144,7 +146,7 @@ namespace EmpDepRoleFulstackProjectJun13.Services
             //    DepartmentName = emp.Department?.Name,
             //    RoleName = emp.Role?.RoleName
             //};
-            return _mapper.Map<GetEmployeeDTO>(emp);
+            return _mapper.Map<GetEmployeeV1DTO>(emp);
         }
     }
 }

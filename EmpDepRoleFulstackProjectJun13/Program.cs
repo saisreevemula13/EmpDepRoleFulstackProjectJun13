@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using EmpDepRoleFulstackProjectJun13.Mapper;
+using Asp.Versioning;
+using Asp.Versioning.ApiExplorer;
+using EmpDepRoleFulstackProjectJun13.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +28,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, tokenService>();
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
+builder.Services.AddScoped<IEmployeeService2, EmployeeService2>();
 
 // ---------------------------
 // 2. JWT Authentication Setup
@@ -53,10 +57,25 @@ builder.Services.AddAuthorization();
 // 3. Swagger Setup with JWT
 // ---------------------------
 builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddApiVersioning(options =>
+{
+    options.DefaultApiVersion = new ApiVersion(1, 0);
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    options.ReportApiVersions = true;
+    options.ApiVersionReader = new UrlSegmentApiVersionReader(); // this is key
+}).AddApiExplorer(options =>
+{
+    options.GroupNameFormat = "'v'VVV";
+    options.SubstituteApiVersionInUrl = true; //  required to match v{version}
+});
+
+builder.Services.ConfigureOptions<ConfigureSwaggerOptions>(); // custom logic for versioned docs
+
+builder.Services.AddControllers();
+
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new OpenApiInfo { Title = "Your API", Version = "v1" });
-
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -83,8 +102,6 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-builder.Services.AddControllers();
-
 var app = builder.Build();
 
 // ---------------------------
@@ -93,9 +110,16 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
 }
 
+app.UseSwaggerUI(options =>
+{
+    var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
+    foreach (var desc in provider.ApiVersionDescriptions)
+    {
+        options.SwaggerEndpoint($"/swagger/{desc.GroupName}/swagger.json", desc.GroupName.ToUpperInvariant());
+    }
+});
 app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseHttpsRedirection();

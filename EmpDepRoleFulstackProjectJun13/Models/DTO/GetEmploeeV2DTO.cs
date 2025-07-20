@@ -1,6 +1,6 @@
 ﻿namespace EmpDepRoleFulstackProjectJun13.Models.DTO
 {
-    public class GetEmployeeDTO
+    public class GetEmploeeV2DTO
     {
         public int EmployeeId { get; set; }
         public string Name { get; set; }
@@ -9,5 +9,6 @@
         public DateTime JoiningDate { get; set; }
         public string RoleName { get; set; }
         public string DepartmentName { get; set; }
+        public string? Designation { get; set; }
     }
 }

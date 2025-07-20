@@ -16,6 +16,9 @@ namespace EmpDepRoleFulstackProjectJun13.Models.Domain
 
             public int RoleId { get; set; }
             public Role Role { get; set; }
-       
+
+            //new field addition
+            public string? Designation { get; set; }
+
     }
 }

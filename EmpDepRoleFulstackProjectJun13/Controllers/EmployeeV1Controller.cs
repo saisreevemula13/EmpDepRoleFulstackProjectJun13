@@ -1,4 +1,5 @@
-﻿using EmpDepRoleFulstackProjectJun13.Data;
+﻿using Asp.Versioning;
+using EmpDepRoleFulstackProjectJun13.Data;
 using EmpDepRoleFulstackProjectJun13.Models.Domain;
 using EmpDepRoleFulstackProjectJun13.Models.DTO;
 using EmpDepRoleFulstackProjectJun13.Repositories;
@@ -9,14 +10,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EmpDepRoleFulstackProjectJun13.Controllers
 {
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
-    public class EmployeeController : ControllerBase
+    public class EmployeeV1Controller : ControllerBase
     {
         private readonly AppDBContext _dbContext;
         private readonly IEmployeeRepository _employeeRepository;
         private readonly IEmployeeService _employeeService;
-        public EmployeeController(AppDBContext dbContext, IEmployeeRepository employeeRepository, IEmployeeService employeeService)
+        public EmployeeV1Controller(AppDBContext dbContext, IEmployeeRepository employeeRepository, IEmployeeService employeeService)
         {
             _dbContext = dbContext;
             _employeeRepository= employeeRepository;
@@ -24,14 +26,18 @@ namespace EmpDepRoleFulstackProjectJun13.Controllers
         }
 
         [HttpGet]
+        [MapToApiVersion("1.0")]
         [Authorize(Roles = "Admin,Manager,IT,Tester")]
-        public async Task<IActionResult> GetEmployees()
+        public async Task<IActionResult> GetEmployees([FromQuery] string? filterOn, [FromQuery] string? filterQuery,
+            [FromQuery] string? sortBy, bool? isAscending, [FromQuery] int? PageNumber = 1,
+             [FromQuery] int? PageSize = 1000)
         {
-            var employees = await _employeeService.GetAllEmployeesAsync();
+            var employees = await _employeeService.GetAllEmployeesAsync(filterOn,filterQuery,sortBy, isAscending ?? true, PageNumber,PageSize);
             return Ok(employees);
         }
 
         [HttpGet("{id:int}")]
+        [MapToApiVersion("1.0")]
         public async Task<IActionResult> GetEmployeesById(int id)
         {
             var emp = await _employeeService.GetEmployeeByIdAsync(id);
@@ -39,6 +45,7 @@ namespace EmpDepRoleFulstackProjectJun13.Controllers
         }
 
         [HttpPost]
+        [MapToApiVersion("1.0")]
         [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> CreateEmployee([FromBody] CreateEmployeeDTO empDTO)
         {
@@ -47,6 +54,7 @@ namespace EmpDepRoleFulstackProjectJun13.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [MapToApiVersion("1.0")]
         [Authorize(Roles = "Admin,Manager,IT")]
         public async Task<IActionResult> UpdateEmployee(int id, [FromBody] UpdateEmployeeDTO empDTO)
         {
@@ -58,11 +66,18 @@ namespace EmpDepRoleFulstackProjectJun13.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [MapToApiVersion("1.0")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteEmployee(int id)
         {
             var isDeleted = await _employeeService.DeleteEmployeeAsync(id);
             return isDeleted ? Ok(new { message = "Employee deleted successfully" }): NotFound();
         }
-    }
+
+
+//        {
+//  "username": "karan.mehta@example.com",
+//  "password": "karan@123"
+//}
+}
 }

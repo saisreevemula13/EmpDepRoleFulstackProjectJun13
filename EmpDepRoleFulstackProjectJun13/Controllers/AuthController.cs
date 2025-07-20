@@ -1,4 +1,5 @@
-﻿using EmpDepRoleFulstackProjectJun13.Models.Domain;
+﻿using Asp.Versioning;
+using EmpDepRoleFulstackProjectJun13.Models.Domain;
 using EmpDepRoleFulstackProjectJun13.Models.DTO;
 using EmpDepRoleFulstackProjectJun13.Repositories;
 using EmpDepRoleFulstackProjectJun13.Services;
@@ -8,8 +9,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EmpDepRoleFulstackProjectJun13.Controllers
 {
+    [ApiVersion("1.0")]
+    [ApiVersion("2.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
-    [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
         private readonly ITokenService _tokenService;
